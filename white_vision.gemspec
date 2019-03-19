@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.version     = WhiteVision::VERSION
   spec.authors     = ["Roger Campos"]
   spec.email       = ["roger@rogercampos.com"]
-  spec.homepage    = "TODO"
-  spec.summary     = "TODO: Summary of WhiteVision."
-  spec.description = "TODO: Description of WhiteVision."
+  spec.homepage    = "https://github.com/rogercampos/white_vision"
+  spec.summary     = "Simple email platform"
+  spec.description = "Simple email platform for Rails applications"
   spec.license     = "MIT"
 
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
@@ -26,6 +26,9 @@ Gem::Specification.new do |spec|
   spec.files = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
   spec.add_dependency "rails", "~> 5.2.2"
+  spec.add_dependency "dry-validation"
+  spec.add_dependency "sendgrid-ruby"
+  spec.add_dependency "mail"
 
-  spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency "sqlite3", '~> 1.3.6'
 end
