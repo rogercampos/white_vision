@@ -1,5 +1,7 @@
+require 'white_vision/email'
+
 module WhiteVision
-  class HtmlEmail
+  class HtmlEmail < Email
     def format
       :html
     end

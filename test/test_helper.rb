@@ -20,9 +20,12 @@ end
 
 
 module CommonHelpers
-  def use_config(data)
+  def initialize(*)
     @stub_saved_config = {}
+    super
+  end
 
+  def use_config(data)
     data.each do |config, value|
       raise "#{config} Not known?" unless  WhiteVision::Config.respond_to?(config)
 
@@ -30,7 +33,7 @@ module CommonHelpers
       WhiteVision::Config.send("#{config}=", value)
     end
   end
-  
+
   def teardown
     super
     return unless @stub_saved_config

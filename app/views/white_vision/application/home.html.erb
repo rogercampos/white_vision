@@ -1,1 +1,18 @@
 <h1>Hi! This is the main dashboard.</h1>
+
+<p>Here are the known emails defined programatically:</p>
+
+<table>
+  <tr>
+    <th>Subject</th>
+    <th>Link</th>
+  </tr>
+
+
+  <% @emails.each do |email| %>
+    <tr>
+      <td><%= email.subject %></td>
+      <td><%= link_to "Preview", preview_path(email.class.name) %></td>
+    </tr>
+  <% end %>
+</table>

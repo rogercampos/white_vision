@@ -13,7 +13,7 @@ module WhiteVision
     end
 
     def template_id
-      nil
+      self.class.name.demodulize.underscore
     end
 
     def track_success?
@@ -34,6 +34,10 @@ module WhiteVision
 
     def extra_data
       {}
+    end
+
+    def self.initialize_preview
+      raise NotImplementedError
     end
 
 

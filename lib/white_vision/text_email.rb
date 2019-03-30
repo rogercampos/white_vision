@@ -1,5 +1,7 @@
+require 'white_vision/email'
+
 module WhiteVision
-  class TextEmail
+  class TextEmail < Email
     def format
       :text
     end

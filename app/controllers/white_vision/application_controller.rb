@@ -3,7 +3,9 @@ module WhiteVision
     protect_from_forgery with: :exception
 
     def home
-      p EmailRecord.count
+      @emails = (WhiteVision::Email.descendants - [WhiteVision::TextEmail, WhiteVision::HtmlEmail]).map do |klass|
+        klass.initialize_preview
+      end
     end
   end
 end
