@@ -4,15 +4,16 @@ require 'test_helper'
 
 module WhiteVision
   class EventProcessorTest < ActiveSupport::TestCase
-    include PelekaHelpers
+    include TestHelpers
 
     test 'tracks processing' do
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             message: '<h1>BOO</h1>',
+                                             format: :html,
+                                             track_success: false
+
 
       time = Time.current
 
@@ -29,9 +30,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             message: '<h1>BOO</h1>',
+                                             format: :html,
+                                             track_success: false
+
 
       time = Time.current
 
@@ -48,9 +50,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             format: :html,
+                                             message: '<h1>BOO</h1>',
+                                             track_success: false
+
 
       time = Time.current
 
@@ -66,10 +69,11 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
+                                             message: '<h1>BOO</h1>',
                                              track_success: true,
-                                             success_rule: 'by_open',
-                                             template_id: "test"
+                                             format: :html,
+                                             success_rule: 'by_open'
+
 
       time = Time.current
 
@@ -85,9 +89,9 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             format: :html,
+                                             message: '<h1>BOO</h1>',
+                                             track_success: false
 
 
       time = Time.current
@@ -104,10 +108,11 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
+                                             message: '<h1>BOO</h1>',
                                              track_success: true,
-                                             success_rule: 'by_click',
-                                             template_id: "test"
+                                             format: :html,
+                                             success_rule: 'by_click'
+
 
 
       time = Time.current
@@ -123,12 +128,13 @@ module WhiteVision
     test 'tracks success by click on specific urls' do
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
+                                             format: :html,
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
+                                             message: '<h1>BOO</h1>',
                                              track_success: true,
                                              success_rule: 'by_click',
-                                             success_url_regexp: "(facebook.com|google.com)",
-                                             template_id: "test"
+                                             success_url_regexp: "(facebook.com|google.com)"
+
 
 
       time = Time.current
@@ -148,10 +154,11 @@ module WhiteVision
     test 'track drops' do
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
+                                             format: :html,
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             message: '<h1>BOO</h1>',
+                                             track_success: false
+
 
 
       time = Time.current
@@ -169,9 +176,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
+                                             message: '<h1>BOO</h1>',
                                              track_success: false,
-                                             template_id: "test"
+                                             format: :html
+
 
 
       time = Time.current
@@ -188,9 +196,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
+                                             message: '<h1>BOO</h1>',
                                              track_success: false,
-                                             template_id: "test"
+                                             format: :html
+
 
 
       time = Time.current
@@ -207,9 +216,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             message: '<h1>BOO</h1>',
+                                             format: :html,
+                                             track_success: false
+
 
 
       peleka_simulate(:open, email.id)
@@ -223,9 +233,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             message: '<h1>BOO</h1>',
+                                             format: :html,
+                                             track_success: false
+
 
 
       peleka_simulate(:click, email.id)
@@ -239,9 +250,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             format: :html,
+                                             message: '<h1>BOO</h1>',
+                                             track_success: false
+
 
 
       time = Time.current
@@ -267,9 +279,10 @@ module WhiteVision
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             format: :html,
+                                             message: '<h1>BOO</h1>',
+                                             track_success: false
+
 
 
       time = Time.current
@@ -294,10 +307,11 @@ module WhiteVision
     test 'tracks ip on opening' do
       email = WhiteVision::Sender.send_email recipient: 'Jon <jon.doe@gmail.com>',
                                              from: 'Cuca <cuca@msn.com>',
+                                             format: :html,
                                              subject: 'Hellou',
-                                             html_body: '<h1>BOO</h1>',
-                                             track_success: false,
-                                             template_id: "test"
+                                             message: '<h1>BOO</h1>',
+                                             track_success: false
+
 
 
       peleka_simulate(:open, email.id, ip: '4.3.2.1')

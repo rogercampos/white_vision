@@ -12,7 +12,10 @@
 
 ActiveRecord::Schema.define(version: 2019_03_19_020454) do
 
-  create_table "white_vision_emails", force: :cascade do |t|
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
+  create_table "white_vision_email_records", force: :cascade do |t|
     t.boolean "bounced", default: false, null: false
     t.boolean "dropped", default: false, null: false
     t.boolean "blocked", default: false, null: false
@@ -32,10 +35,11 @@ ActiveRecord::Schema.define(version: 2019_03_19_020454) do
     t.datetime "first_open_at"
     t.datetime "first_click_at"
     t.text "last_open_from_ip"
-    t.text "template_id", null: false
+    t.text "template_id"
     t.text "last_open_from_country"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.jsonb "extra_data"
     t.index ["recipient"], name: "index_emails_on_recipient"
     t.index ["template_id"], name: "index_emails_on_template_id"
   end

@@ -3,6 +3,8 @@
 module WhiteVision
   class EventProcessor
     def self.process(json_payload)
+      return unless json_payload.is_a?(Array)
+
       # We may receive duplicated events in the same payload
       # https://sendgrid.com/docs/API_Reference/Webhooks/event.html#-Duplicate-Events
       json_payload.uniq { |x| x['sg_event_id'] }.each { |x| new(x).run! }
@@ -18,7 +20,7 @@ module WhiteVision
       return unless @email_id
 
       ActiveRecord::Base.transaction do
-        @email = Email.lock.find_by(id: @email_id)
+        @email = EmailRecord.lock.find_by(id: @email_id)
 
         # Ignore callback if the email no longer exists in the Repository
         return unless @email

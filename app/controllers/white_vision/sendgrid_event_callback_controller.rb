@@ -2,7 +2,15 @@
 
 module WhiteVision
   class SendgridEventCallbackController < ActionController::Base
-    http_basic_authenticate_with name: 'secret', password: 'secret'
+    before_action do
+      if Config.webhook_basic_auth_username.present? && Config.webhook_basic_auth_password.present?
+        authenticate_or_request_with_http_basic("WhiteVision") do |name, password|
+          ActiveSupport::SecurityUtils.secure_compare(name, Config.webhook_basic_auth_username) &
+            ActiveSupport::SecurityUtils.secure_compare(password, Config.webhook_basic_auth_password)
+        end
+      end
+    end
+
 
     def callback
       json_payload = JSON.parse request.raw_post
@@ -10,6 +18,10 @@ module WhiteVision
       EventProcessor.process(json_payload)
 
       head :ok
+
+    rescue JSON::ParserError
+      head :unprocessable_entity
+
     end
   end
 end

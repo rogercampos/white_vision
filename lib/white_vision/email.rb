@@ -1,16 +1,57 @@
-# frozen_string_literal: true
-
 module WhiteVision
-  class Email < ActiveRecord::Base
-    validates_presence_of :success_rule, if: :track_success?
-    validates_inclusion_of :success_rule, in: %w[by_open by_click], allow_nil: true
-
-    def processed?
-      !!processed_at
+  class Email
+    def subject
+      raise NotImplementedError
     end
 
-    def delivered?
-      !!delivered_at
+    def message
+      raise NotImplementedError
+    end
+
+    def replacements
+      {}
+    end
+
+    def template_id
+      nil
+    end
+
+    def track_success?
+      raise NotImplementedError
+    end
+
+    def format
+      raise NotImplementedError
+    end
+
+    def success_rule
+      raise(NotImplementedError) if track_success?
+    end
+
+    def success_url_regexp
+      nil
+    end
+
+    def extra_data
+      {}
+    end
+
+
+    private
+
+    def apply_replacements(str, extra_replacements = {})
+      included_replacements = str.scan(/=\w+=/)
+      applicable_replacements = replacements.merge(extra_replacements)
+
+      unless (included_replacements - applicable_replacements.keys).empty?
+        raise "There are replacements pending to be assigned: #{included_replacements - replacements.keys}"
+      end
+
+      applicable_replacements.each do |k, value|
+        str = str.gsub(k, value)
+      end
+
+      str
     end
   end
 end

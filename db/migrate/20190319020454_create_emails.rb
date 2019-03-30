@@ -1,6 +1,6 @@
 class CreateEmails < ActiveRecord::Migration[5.2]
   def change
-    create_table :white_vision_emails do |t|
+    create_table :white_vision_email_records do |t|
       t.boolean "bounced", null: false, default: false
       t.boolean "dropped", null: false, default: false
       t.boolean "blocked", null: false, default: false
@@ -20,10 +20,11 @@ class CreateEmails < ActiveRecord::Migration[5.2]
       t.datetime "first_open_at"
       t.datetime "first_click_at"
       t.text "last_open_from_ip"
-      t.text "template_id", null: false
+      t.text "template_id"
       t.text "last_open_from_country"
       t.datetime "created_at", null: false
       t.datetime "updated_at", null: false
+      t.jsonb "extra_data"
       t.index ["recipient"], name: "index_emails_on_recipient"
       t.index ["template_id"], name: "index_emails_on_template_id"
     end

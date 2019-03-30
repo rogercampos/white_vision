@@ -2,26 +2,178 @@
 
 White Vision is a simple email platform to provide your application with basic emailing capabilities. It works as a mountable Engine on your ruby on rails application and provides a UI as well as a programmable API to perform operations.
 
-The goal of this tool is to provide you with a way to create and send emails, as well as a way to keep track of emailing activity. You can define a *success rule* for any email sent (like opening, or clicking some specific link) and then know which ones of the sent emails are now a success. All other related events are also recorded (email received, opened, clicked, etc.). But nothing more, for example, you won't be able to define "entire emailing flows". Instead you can do that on your own and use this tool just to send the emails at the correct time, calculated by you.
+The goal of this tool is to provide you with a way to create and send emails, as well as a way to keep track of emailing activity. You can define a *success rule* for any email sent (like opening, or clicking some specific link) and then know which ones of the sent emails are a success. All other related events are also recorded (email received, opened, clicked, etc.). But nothing more, for example, you won't be able to define "entire emailing flows". Instead you can do that on your own and use this tool just to send the emails at the correct time, calculated by you.
 
-This tool uses Sendgrid as the underlaying email provider, using its [events webhook]() to know about activity.
+This tool uses Sendgrid as the underlaying email provider, using its [events webhooks](https://sendgrid.com/docs/API_Reference/Event_Webhook/event.html) to know about activity.
 
 
 ## Sendgrid Integration
 
 As mentioned, you'll need a Sendgrid account to work with WhiteVision. At the time of writing, you can get a free account and send up to 100 emails per day. 
 
-The configuration needed will be the **sendgrid_api_key**, and you'll have to configure a webhook in sendgrid pointing to `/white_vision/sendgrid_event_callback` in order to capture events.
- 
+The configuration needed will be the **sendgrid_api_key**, and you'll have to configure a webhook in sendgrid pointing to `/white_vision/sendgrid_event_callback` in order to capture events. You can follow sendgrid's reference [here](https://sendgrid.com/docs/API_Reference/Event_Webhook/getting_started_event_webhook.html) to set it up.
 
+You can set the api key with:
+
+```ruby
+# initializers/white_vision.rb or a file of your choice 
+WhiteVision::Config.sendgrid_api_key = "api key"
+```
+ 
+If you choose to use basic auth security in sendgrid, you can give the user and password to WhiteVision this way:
+
+```ruby
+WhiteVision::Config.webhook_basic_auth_username = "user"
+WhiteVision::Config.webhook_basic_auth_password = "passwd"
+```
 
 ## Using the programmable API
 
-Email body must be provided as-is, in HTML form. In can include substitutions in the form of "=name=", for example. You can use anything, you'll have to provide real values later on when sending the email (if not all substitutions are provided an error will be raised).
+The api you can use to send emails is:
 
-Define emails as ruby classes, and then send them out to recipients from your app. Interpolations can be given at runtime. It's recommended that you create some base classes or mixins to define common behaviour, for example to separate "transactional" emails from "marketing" ones.
+```ruby
+WhiteVision::Sender.send_email recipient: "foobar@gmail.com",
+                               subject: "Subject line",
+                               format: :html,
+                               message: "<h1>Hi!</h1>",
+                               from: "Myself <myself@me.com>",
+                               track_success: true, 
+                               success_rule: "by_open"
+```
+
+This provides a fine grained control level, as you explicitly give all information for the email to be sent. Arguments are:
+
+- recipient: Required. A string or array of strings with the recipient emails.
+- cc: Optional. A string or array of strings with emails to be included as "cc".
+- bcc: Optional. A string or array of strings with emails to be included as "bcc".
+- subject: Required. String that will appear as the subject of the sent email.
+- format: Required. A symbol either `:html` or `:text`. The format of the email.
+- message: Required. A string with the body of the email. Either an html string or a plain text depending on format.
+- from: Required. A string with the email acting as sender.
+- template_id: Optional. A string identifier to make this email part of a group. Only for reporting purposes. If this is an ad-hoc email, you can leave it blank. If this email is part of a campaign you're sending to many users, then you can use this to group all those emails together and get reports based on that.  
+- track_success: Required. Boolean indicating whether or not success should be tracked for this email.
+- success_rule: Required only if track_success. A string either "by_click" or "by_open", indicating what to account as a success for this email. "by_open" will track success as soon as the email is open (as tacked by sendgrid, it uses a 1px image for that) and "by_click" will track success when any link in the email is clicked.
+- success_url_regexp: Optional. If `success_rule` is "by_click" and this is provided (as a string), the success will only count if the clicked url matches this value interpreted as a regexp. If the value is not a valid regexp, an error will be raised.
+- extra_data: Optional. A hash of data with additional information to be saved along with this email. Used only for reporting purposes later on, for example, you can store here your user's id to identify the recipient by your own terms, or any additional information to help identify this email by itself or as a member of a group later on. It will be stored as json, so the data must be compatible (only basic types).
 
 
+Instead of using this low level api, however, is usually preferable to define the emails your application will send as ruby classes. This gem comes with a way for you to do that that provides:
+
+- Interpolations of values. Transform `=my_var=` in the email's body into actual values you provide.
+- A simple way to store html templates of the emails
+- The option to show a preview of those emails in the admin UI.
+
+
+```ruby
+class NewPost < WhiteVision::HtmlEmail
+  def initialize(post)
+    @post = post
+    @post_url = "https://mywebsite/#{@post.slug}" # Simplified!
+  end
+  
+  def subject
+    "[My website] New post - #{@post.title}"
+  end
+  
+  def track_success?
+    true
+  end
+
+  def success_rule
+    'by_click'
+  end
+
+  def success_url_regexp
+    Regexp.escape(@post_url)
+  end
+  
+  def html_template
+    'new_post.html'
+  end
+  
+  def replacements
+    {
+      "=post_title=" => @post.title
+    }
+  end
+end
+```
+
+- `format` will be automatically set to `:html`.
+- The `template_id` explained before will be automatically inferred from the class name. You can also define that method to override this behavior.
+- `message` will be constructed by loading the template you specified in the `html_template` method. This gem will look for that file in the folder `<Rails.root>/app/views/white_vision/<name>`. Can have subfolders, like `posts/new_post.html`. If you want to store those templates in another place, you can say so with `WhiteVision::Config.html_templates_root = "/my/path"`. You can also override `message` with your own implementation, it just needs to return the HTML of the email to be sent.
+- The same arguments explained in the API of the `send_email` method before are here considered methods of the email class. You can define any such method and it will take precedence. Exceptions are "recipient", "cc" and "bcc", since you'll provide those later on when sending the email.
+- The `replacements` is an optional hash with pairs of "key => value" with all the substitutions that will have to be performed on the email message. This is automatically applied in the email template, but you can also manually apply it with the method `apply_replacements(string)`. For example, if the subject is dynamic, you could make it include the recipients' name with:
+
+
+```ruby
+class NewPost < WhiteVision::HtmlEmail
+  def initialize(post, user)
+    @post = post
+    @post_url = "https://mywebsite/#{@post.slug}" # Simplified!
+    @user = user # The recipient of the email
+  end
+  
+  def subject
+    # Ex: The subject is dynamic, is set when creating a new post.
+    # Suppose it has the value "Hi =name=, a new post has been published!", after
+    # applying replacements it will be "Hi Jon, a new post has been published!"  
+    apply_replacements(@post.email_subject)  
+  end
+  
+  def replacements
+    {
+      "=name=" => @user.name
+    }
+  end
+end
+```  
+
+If you want to create a text email instead, you can instead inherit from `WhiteVision::TextEmail`:
+
+```ruby
+class NewPost < WhiteVision::TextEmail
+  def initialize(post)
+    @post = post
+    @post_url = "https://mywebsite/#{@post.slug}" # Simplified!
+  end
+  
+  def subject
+    "[My website] New post - #{@post.title}"
+  end
+  
+  def track_success?
+    true
+  end
+
+  def success_rule
+    'by_click'
+  end
+
+  def success_url_regexp
+    Regexp.escape(@post_url)
+  end
+  
+  def message
+    "This is the email body"
+  end
+  
+  def replacements
+    {
+      "=post_title=" => @post.title
+    }
+  end
+end
+```  
+
+Same as before, except this time you must provide the email body yourself as `message`. You can use `apply_replacements` if needed.  
+
+You can then send such emails with:
+
+```ruby
+email = NewPost.new(Post.last)
+WhiteVision::Sender.send_email_template email, recipient: "foo@gmail.com" # "cc" and "bcc" also optional
+```
 
 ## Using the UI
 
@@ -65,8 +217,47 @@ In the UI you can also previsualize the emails created in the app, but with no s
 
 
 
-## Usage
-How to use my plugin.
+
+## Reporting
+
+
+
+## Email previews
+
+Already explained for emails created ad-hoc via UI. For programatic emails created as ruby classes, you have to provide explicitly how to preview it, since the email could take any info as input.
+
+
+
+
+
+## Testing helpers
+
+This gem offers some already made helpers to facilitate the task to test sent emails in your tests. 
+
+If using Minitest, you should include this module in your `TestCase`:
+
+```ruby
+module ActiveSupport
+  class TestCase
+    include WhiteVision::MinitestHelpers
+  end
+end
+```
+
+Or if using rspec, declare it in a support file:
+
+```ruby
+# spec/support/white_vision.rb
+ 
+RSpec.configure do |config|
+  config.include(WhiteVision::RspecHelpers)
+end 
+```
+
+This module offers the following methods:
+
+- ........................
+
 
 ## Installation
 Add this line to your application's Gemfile:

@@ -1,14 +1,12 @@
 # Configure Rails Environment
 ENV["RAILS_ENV"] = "test"
+ENV["BACKTRACE"] = "true"
+
 
 require_relative "../test/dummy/config/environment"
 ActiveRecord::Migrator.migrations_paths = [File.expand_path("../test/dummy/db/migrate", __dir__)]
 ActiveRecord::Migrator.migrations_paths << File.expand_path('../db/migrate', __dir__)
 require "rails/test_help"
-
-# Filter out Minitest backtrace while allowing backtrace from other libraries
-# to be shown.
-Minitest.backtrace_filter = Minitest::BacktraceFilter.new
 
 
 # Load fixtures from the engine
@@ -19,6 +17,29 @@ if ActiveSupport::TestCase.respond_to?(:fixture_path=)
   ActiveSupport::TestCase.fixtures :all
 end
 
+
+
+module CommonHelpers
+  def use_config(data)
+    @stub_saved_config = {}
+
+    data.each do |config, value|
+      raise "#{config} Not known?" unless  WhiteVision::Config.respond_to?(config)
+
+      @stub_saved_config[config] = WhiteVision::Config.send(config)
+      WhiteVision::Config.send("#{config}=", value)
+    end
+  end
+  
+  def teardown
+    super
+    return unless @stub_saved_config
+
+    @stub_saved_config.each do |config, value|
+      WhiteVision::Config.send("#{config}=", value)
+    end
+  end
+end
 
 module PelekaHelpers
   module PelekaMock
@@ -91,4 +112,10 @@ module PelekaHelpers
     common = { peleka_id: id, timestamp: Time.current.to_i, ip: '1.1.1.1' }.merge(extra)
     WhiteVision::EventProcessor.process([common.merge(event: event_name.to_s).stringify_keys])
   end
+end
+
+
+module TestHelpers
+  include CommonHelpers
+  include PelekaHelpers
 end
