@@ -16,7 +16,6 @@ module Dummy
     # the framework and any gems in your application.
 
     config.to_prepare do
-      puts "Required now."
       require_dependency 'test_1'
       require_dependency 'test_2'
     end

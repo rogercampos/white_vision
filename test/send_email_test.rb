@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class WhiteVision::Test < ActiveSupport::TestCase
+class WhiteVision::SendEmailTest < ActiveSupport::TestCase
   include TestHelpers
 
   test 'sends the given email' do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_19_020454) do
+ActiveRecord::Schema.define(version: 2019_03_31_194331) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,20 @@ ActiveRecord::Schema.define(version: 2019_03_19_020454) do
     t.jsonb "extra_data"
     t.index ["recipient"], name: "index_emails_on_recipient"
     t.index ["template_id"], name: "index_emails_on_template_id"
+  end
+
+  create_table "white_vision_email_templates", force: :cascade do |t|
+    t.text "format"
+    t.text "message"
+    t.text "subject"
+    t.text "from"
+    t.boolean "track_success"
+    t.text "success_rule"
+    t.text "success_url_regexp"
+    t.text "status"
+    t.text "template_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
 end

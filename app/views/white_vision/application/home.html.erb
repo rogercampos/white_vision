@@ -1,18 +1,55 @@
-<h1>Hi! This is the main dashboard.</h1>
+<h1>Main dashboard.</h1>
 
 <p>Here are the known emails defined programatically:</p>
 
 <table>
   <tr>
+    <th>Template ID</th>
     <th>Subject</th>
-    <th>Link</th>
+    <th></th>
   </tr>
 
 
-  <% @emails.each do |email| %>
+  <% @email_template_klasses.each do |email_template| %>
+    <% email = email_template.initialize_preview %>
     <tr>
-      <td><%= email.subject %></td>
-      <td><%= link_to "Preview", preview_path(email.class.name) %></td>
+      <% if email.nil? %>
+        <td><em>This email template (<%= email_template.name %>) has no preview configured.</em></td>
+      <% else %>
+        <td><%= email.template_id %></td>
+        <td><%= email.subject %></td>
+        <td><%= link_to "Preview", preview_path(email.class.name), target: "_blank" %></td>
+      <% end %>
+    </tr>
+  <% end %>
+</table>
+
+
+<h4>Create a new Ad-hoc email:</h4>
+<%= form_for WhiteVision::EmailTemplate.new do |f| %>
+  <p>Template ID:</p>
+  <%= f.text_field :template_id %>
+  <%= f.submit "Create" %>
+<% end %>
+
+
+<p>List of existing ad-hoc emails:</p>
+
+<table>
+  <tr>
+    <th>Template ID</th>
+    <th>Subject</th>
+    <th>Status</th>
+    <th></th>
+  </tr>
+
+
+  <% @email_templates.each do |email_template| %>
+    <tr>
+      <td><%= email_template.template_id %></td>
+      <td><%= email_template.subject %></td>
+      <td><%= email_template.status %></td>
+      <td><%= link_to "Edit", edit_email_template_path(email_template) %></td>
     </tr>
   <% end %>
 </table>

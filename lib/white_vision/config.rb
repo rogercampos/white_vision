@@ -14,6 +14,14 @@ module WhiteVision
     # Where to look for html templates
     mattr_accessor(:html_templates_root)
 
+    mattr_accessor(:default_from)
+
+    mattr_accessor(:recipient_klass)
+    mattr_accessor(:recipient_klass_attribute)
+    mattr_accessor(:testing_only_recipients)
+    mattr_accessor(:send_scopes)
+    mattr_accessor(:replacements)
+
     # Cannot set default at definition time because that's run before app initialization and `Rails.root`
     # is nil then.
     def self.read_html_templates_root

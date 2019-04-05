@@ -1,7 +1,7 @@
 require 'test_helper'
 
 module WhiteVision
-  class HtmlEmailTest < ActiveSupport::TestCase
+  class EmailTest < ActiveSupport::TestCase
     class MyBaseEmail < WhiteVision::HtmlEmail
       def initialize(name = "Jon")
         @name = name

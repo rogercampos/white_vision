@@ -12,7 +12,7 @@ module WhiteVision
 
     def initialize(json)
       @json = json
-      @email_id = @json['peleka_id']
+      @email_id = @json['white_vision_id']
     end
 
     def run!

@@ -3,9 +3,8 @@ module WhiteVision
     protect_from_forgery with: :exception
 
     def home
-      @emails = (WhiteVision::Email.descendants - [WhiteVision::TextEmail, WhiteVision::HtmlEmail]).map do |klass|
-        klass.initialize_preview
-      end
+      @email_template_klasses = WhiteVision::Email.descendants.select {|x| x.descendants.empty? }
+      @email_templates = EmailTemplate.all
     end
   end
 end

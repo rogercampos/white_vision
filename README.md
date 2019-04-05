@@ -127,9 +127,40 @@ class NewPost < WhiteVision::HtmlEmail
     }
   end
 end
-```  
+```
 
-If you want to create a text email instead, you can instead inherit from `WhiteVision::TextEmail`:
+The value of each replacement can be either the raw string value, or a lambda, in which case it will be `call`ed at runtime. This may be convenient to combine with `apply_replacements("value", except: "=subject=") for example, to exclude some replacements to be taken into account. For example, if you want to provide the subject of the email as a replacement globally for each email, but for one particular email you want the subject to be also computed taking into account replacements. You would normally define subject as we seen before like:
+
+
+```ruby
+  def subject
+    apply_replacements(@post.email_subject)  
+  end
+``` 
+
+But if `subject` is also mentioned as part of a generic replacements, this will lead into an infinite loop:
+
+```ruby
+def replacements
+  { "=subject=" => subject, # others ...}
+end
+```
+
+The way to avoid that would be call `apply_replacements` excluding the subject replacement when you call if from `subject` itself, as well as defining the generic subject replacement as lazy with a proc:
+
+```ruby
+  def subject
+    apply_replacements(@post.email_subject, except: "=subject=")  
+  end
+  
+  def replacements
+    { "=subject=" => -> { subject } }
+  end
+``` 
+
+
+
+If you want to create a text email instead, you can inherit from `WhiteVision::TextEmail`:
 
 ```ruby
 class NewPost < WhiteVision::TextEmail
@@ -197,7 +228,9 @@ Config.send_scopes = {
 Config.substitutions = {
   '=name=' => proc { |subscriber| subscriber.name },
   '=cancelation_url=' => proc { |subscriber| Rails.routes.cancel_url(tk: subsciber.cancel_token) }
-}  
+}
+Config.default_from = "Me Myself <me@me.com>"
+
 ```
 
 - `recipient_klass` will be an AR class that holds your representation of a possible "recipient". Maybe a dedicated class like `Subscriber` or a more general thing like `User`. 
@@ -224,10 +257,25 @@ In the UI you can also previsualize the emails created in the app, but with no s
 
 ## Email previews
 
-Already explained for emails created ad-hoc via UI. For programatic emails created as ruby classes, you have to provide explicitly how to preview it, since the email could take any info as input.
+Already explained for emails created ad-hoc via UI. For programatic emails created as ruby classes, you need to create the class method `initiailze_preview` in your email class, and return an instance of that email. Initialize with fake data as you see fit. For example:
 
+ 
+```ruby
+class NewPost < WhiteVision::HtmlEmail
+  def initialize(post, user)
+    @post = post
+    @user = user
+  end
+  
+  # All other email methods
+ 
+  def self.initialize_preview
+    new Post.first, User.first # or whatever 
+  end
+end
+```
 
-
+If this method is not present or returns nil, the preview won't be available for this email.
 
 
 ## Testing helpers

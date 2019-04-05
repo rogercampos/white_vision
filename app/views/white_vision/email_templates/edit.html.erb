@@ -1,0 +1,117 @@
+<% if @email_template.status == "draft" %>
+  <%= form_for @email_template do |f| %>
+    <div>
+      <%= f.label "Template id" %>
+      <%= f.text_field :template_id %>
+    </div>
+
+    <div>
+      <%= f.label "Format" %>
+      <%= f.select :format, [["Html", "html"], ["Text", "text"]] %>
+    </div>
+
+    <div>
+      <%= f.label "From" %>
+      <%= f.text_field :from %>
+    </div>
+
+    <div>
+      <%= f.label "Subject" %>
+      <%= f.text_field :subject %>
+    </div>
+
+    <div>
+      <%= f.label "Track success?" %>
+      <%= f.check_box :track_success %>
+    </div>
+
+    <div>
+      <%= f.label "Success rule" %>
+      <%= f.select :success_rule, [['Success on open', "by_open"], ['Success on link click', "by_click"]] %>
+    </div>
+
+    <div>
+      <%= f.label "If success by click, any regexp in particular?" %>
+      <%= f.text_field :success_url_regexp %>
+    </div>
+
+    <div>
+      <%= f.label "Message" %>
+      <%= f.text_area :message, cols: 80, rows: 20 %>
+    </div>
+
+
+    <%= f.submit "Update" %>
+  <% end %>
+
+<% else %>
+  <dl>
+    <dt>Template ID</dt>
+    <dd><%= @email_template.template_id %></dd>
+
+    <dt>Format</dt>
+    <dd><%= @email_template.format %></dd>
+
+    <dt>From</dt>
+    <dd><%= @email_template.from %></dd>
+
+    <dt>Subject</dt>
+    <dd><%= @email_template.subject %></dd>
+
+    <dt>Track success?</dt>
+    <dd><%= @email_template.track_success %></dd>
+
+    <dt>Success rule</dt>
+    <dd><%= @email_template.success_rule %></dd>
+
+    <dt>Success by click matching regexp</dt>
+    <dd><%= @email_template.success_url_regexp %></dd>
+  </dl>
+
+<% end %>
+
+<hr/>
+
+
+<% if @email_template.ready_to_send? %>
+  <p><%= link_to "Preview the email in the browser", preview_email_template_path(@email_template.id), target: "_blank" %></p>
+
+  <%= form_tag deliver_preview_email_template_path(@email_template.id) do %>
+    <p>Perform a real delivery to the following test recipient: <%= @test_recipient_email %>
+      : <%= submit_tag "Deliver." %></p>
+  <% end %>
+
+  <% if @email_template.status == "draft" %>
+    <%= form_for @email_template do |f| %>
+      <%= f.hidden_field :status, value: "ready" %>
+      <%= f.submit "Set as READY" %>
+    <% end %>
+
+  <% else %>
+    <%= form_for @email_template do |f| %>
+      <%= f.hidden_field :status, value: "draft" %>
+      <%= f.submit "Set back as DRAFT" %>
+    <% end %>
+
+  <% end %>
+
+
+<% else %>
+  <p>This email is not ready to be sent yet. The following errors must be corrected:</p>
+  <ul>
+    <% @email_template.ready_to_send_errors.each do |error| %>
+      <li><%= error %></li>
+    <% end %>
+  </ul>
+<% end %>
+
+<hr/>
+
+
+<% if @email_template.status == "ready" %>
+  <p>Perform the real mass delivery!</p>
+  <hr />
+<% end %>
+
+
+<%= link_to "Go back", root_path %>

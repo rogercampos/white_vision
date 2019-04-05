@@ -33,6 +33,9 @@ module WhiteVision
     end
 
     def send_email(data = {})
+      data = data.select { |_, v| !v.nil? }
+      data[:from] ||= Config.default_from
+
       result = api_schema.call(data)
 
       unless result.success?
@@ -52,6 +55,29 @@ module WhiteVision
       send_with_sendgrid(email.id, data, data[:format])
 
       email
+    end
+
+    def send_email_template(email, recipient:, cc: nil, bcc: nil)
+      data = {
+        recipient: recipient,
+        subject: email.subject,
+        format: email.format,
+        message: email.message,
+        from: email.from,
+        template_id: email.template_id,
+        track_success: email.track_success?,
+        success_rule: email.success_rule,
+        success_url_regexp: email.success_url_regexp,
+        extra_data: email.extra_data
+      }
+
+      send_email data
+    end
+
+    def send_adhoc_email(email_template, recipient:)
+      data = email_template.data_for_recipient_object(recipient)
+
+      send_email data
     end
 
     private
@@ -78,7 +104,7 @@ module WhiteVision
 
       mail = SendGrid::Mail.new(from, subject, to, content)
 
-      mail.add_custom_arg(SendGrid::CustomArg.new(key: 'peleka_id', value: id.to_s))
+      mail.add_custom_arg(SendGrid::CustomArg.new(key: 'white_vision_id', value: id.to_s))
 
       if Config.sendgrid_api_key.blank?
         raise(ArgumentError, 'There is no sendgrid api key configured!')

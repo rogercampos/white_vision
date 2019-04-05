@@ -1,4 +1,4 @@
-class CreateEmails < ActiveRecord::Migration[5.2]
+class WhiteVisionCreateEmails < ActiveRecord::Migration[5.2]
   def change
     create_table :white_vision_email_records do |t|
       t.boolean "bounced", null: false, default: false
@@ -25,8 +25,8 @@ class CreateEmails < ActiveRecord::Migration[5.2]
       t.datetime "created_at", null: false
       t.datetime "updated_at", null: false
       t.jsonb "extra_data"
-      t.index ["recipient"], name: "index_emails_on_recipient"
-      t.index ["template_id"], name: "index_emails_on_template_id"
+      t.index ["recipient"], name: "index_white_vision_emails_on_recipient"
+      t.index ["template_id"], name: "index_white_vision_emails_on_template_id"
     end
   end
 end

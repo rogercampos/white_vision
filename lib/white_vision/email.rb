@@ -1,4 +1,27 @@
 module WhiteVision
+  module Replacements
+    def self.apply(replacements, str, except: [], object: nil)
+      except = Array.wrap(except)
+      included_replacements = str.scan(/=\w+=/)
+      applicable_replacements = replacements.except *except
+
+      unless (included_replacements - applicable_replacements.keys).empty?
+        raise "There are replacements pending to be assigned: #{included_replacements - replacements.keys}"
+      end
+
+      applicable_replacements.each do |k, value|
+        data = if value.respond_to?(:call)
+                 object ? value.call(object) : value.call
+               else
+                 value
+               end
+        str = str.gsub(k, data)
+      end
+
+      str
+    end
+  end
+
   class Email
     def subject
       raise NotImplementedError
@@ -37,25 +60,14 @@ module WhiteVision
     end
 
     def self.initialize_preview
-      raise NotImplementedError
+      nil
     end
 
 
     private
 
-    def apply_replacements(str, extra_replacements = {})
-      included_replacements = str.scan(/=\w+=/)
-      applicable_replacements = replacements.merge(extra_replacements)
-
-      unless (included_replacements - applicable_replacements.keys).empty?
-        raise "There are replacements pending to be assigned: #{included_replacements - replacements.keys}"
-      end
-
-      applicable_replacements.each do |k, value|
-        str = str.gsub(k, value)
-      end
-
-      str
+    def apply_replacements(str, except: [])
+      Replacements.apply replacements, str, except: except
     end
   end
 end

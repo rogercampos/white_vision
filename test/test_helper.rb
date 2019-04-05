@@ -112,7 +112,7 @@ module PelekaHelpers
   end
 
   def peleka_simulate(event_name, id, extra = {})
-    common = { peleka_id: id, timestamp: Time.current.to_i, ip: '1.1.1.1' }.merge(extra)
+    common = { white_vision_id: id, timestamp: Time.current.to_i, ip: '1.1.1.1' }.merge(extra)
     WhiteVision::EventProcessor.process([common.merge(event: event_name.to_s).stringify_keys])
   end
 end
